@@ -1,0 +1,33 @@
+{
+  "project": {
+    "name": "Système de Pointage Facial",
+    "type": "python-flask",
+    "language": "fr",
+    "version": "1.0.0"
+  },
+  "agent": {
+    "rules": [
+      ".trae/rules/project_rules.md",
+      ".trae/rules/coding_standards.md"
+    ],
+    "tasks_file": ".trae/rules/tasks.md",
+    "prompts_file": ".trae/rules/agent_prompts.md",
+    "context_files": [
+      "docs/architecture.md",
+      "README.md",
+      "config.py",
+      "requirements.txt"
+    ]
+  },
+  "python": {
+    "interpreter": "./venv/bin/python",
+    "formatter": "black",
+    "linter": "flake8",
+    "test_runner": "pytest"
+  },
+  "editor": {
+    "tabSize": 4,
+    "insertSpaces": true,
+    "rulers": [88]
+  }
+}

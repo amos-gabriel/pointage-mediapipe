@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Interface de Pointage{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Flux Vidéo en Direct</h5>
+            </div>
+            <div class="card-body p-0">
+                <img src="/video_feed" class="img-fluid w-100" alt="Flux Vidéo">
+            </div>
+            <div class="card-footer text-muted">
+                <small>Instructions : Placez-vous devant la caméra et levez la main pendant 2 secondes pour pointer.</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Présences du Jour</h5>
+                <span class="badge bg-light text-dark" id="count-badge">0</span>
+            </div>
+            <div class="card-body">
+                <div id="attendance-list" class="list-group list-group-flush" style="max-height: 500px; overflow-y: auto;">
+                    <!-- Rempli par AJAX -->
+                    <p class="text-center text-muted my-3">Chargement...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateAttendance() {
+        fetch('/api/today-attendance')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('attendance-list');
+                const badge = document.getElementById('count-badge');
+                
+                badge.textContent = data.length;
+                
+                if (data.length === 0) {
+                    list.innerHTML = '<p class="text-center text-muted my-3">Aucun pointage aujourd\'hui.</p>';
+                    return;
+                }
+                
+                list.innerHTML = data.map(att => `
+                    <div class="list-group-item d-flex justify-content-between align-items-center animate__animated animate__fadeIn">
+                        <div>
+                            <h6 class="mb-0">${att.prenom} ${att.nom}</h6>
+                            <small class="text-muted">${att.matricule}</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">${att.timestamp}</span>
+                    </div>
+                `).join('');
+            });
+    }
+
+    // Rafraîchir toutes les 3 secondes
+    setInterval(updateAttendance, 3000);
+    updateAttendance();
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+{% endblock %}

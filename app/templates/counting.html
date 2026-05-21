@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Interface de Comptage{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Flux Vidéo - Comptage</h5>
+            </div>
+            <div class="card-body p-0">
+                <img src="/video_feed_count" class="img-fluid w-100" alt="Flux Vidéo">
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow mb-4">
+            <div class="card-body text-center">
+                <h6 class="text-muted text-uppercase mb-2">Personnes Détectées</h6>
+                <h1 class="display-1 fw-bold text-primary" id="current-count">0</h1>
+            </div>
+        </div>
+        
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Évolution Temporelle</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="countChart" style="width: 100%; height: 250px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('countChart').getContext('2d');
+    const maxDataPoints = 20;
+    const chartData = {
+        labels: [],
+        datasets: [{
+            label: 'Nombre de personnes',
+            data: [],
+            borderColor: '#1a237e',
+            backgroundColor: 'rgba(26, 35, 126, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    };
+
+    const config = {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            animation: { duration: 500 }
+        }
+    };
+
+    const countChart = new Chart(ctx, config);
+
+    function updateCount() {
+        fetch('/api/current-count')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('current-count').textContent = data.count;
+                
+                const now = new Date(data.timestamp).toLocaleTimeString();
+                
+                chartData.labels.push(now);
+                chartData.datasets[0].data.push(data.count);
+                
+                if (chartData.labels.length > maxDataPoints) {
+                    chartData.labels.shift();
+                    chartData.datasets[0].data.shift();
+                }
+                
+                countChart.update('none');
+            });
+    }
+
+    setInterval(updateCount, 2000);
+    updateCount();
+</script>
+{% endblock %}
